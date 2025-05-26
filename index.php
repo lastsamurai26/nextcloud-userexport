@@ -1,5 +1,4 @@
 <?php
-
   // Set active navigation item
   $active_page = "index";
 
@@ -9,39 +8,37 @@
   session_secure_start();
 
   // Perform logout steps if selected through GET parameter (click on 'Logout' in navigation)
-  if($_GET['logout'])
+  if (isset($_GET['logout']) && $_GET['logout']) {
     logout();
+  }
 
   /**
     * Get parameters if any, else set defaults
     */
   $target_url = filter_input(INPUT_GET, 'url', FILTER_SANITIZE_URL)
-    ?? $target_url;
-  $user_name = $_GET['user'] ?? $user_name;
-  $user_pass = $_GET['pass'] ?? $user_pass;
+    ?? (isset($target_url) ? $target_url : null);
+  $user_name = isset($_GET['user']) ? $_GET['user'] : (isset($user_name) ? $user_name : null);
+  $user_pass = isset($_GET['pass']) ? $_GET['pass'] : (isset($user_pass) ? $user_pass : null);
 
   // Set UI language to config value or to english (en), if it is not configured
-  $_SESSION['language'] = $language ?? 'en';
+  $_SESSION['language'] = isset($language) ? $language : 'en';
 
   // Include language file
-  require_once 'l10n/'.$_SESSION['language'].'.php';
+  require_once 'l10n/' . $_SESSION['language'] . '.php';
 
   /**
   * Check access_token if set and supplied
   */
-  if($access_token) {
+  $access_token = isset($access_token) ? $access_token : null;
+  if ($access_token) {
+    if (!isset($_SESSION['access_token_provided']) || !$_SESSION['access_token_provided'])
+      $_SESSION['access_token_provided'] = isset($_GET['access_token']) ? $_GET['access_token'] : null;
 
-    if(!$_SESSION['access_token_provided'])
-      $_SESSION['access_token_provided'] = $_GET['access_token'];
-
-    if($_SESSION['access_token_provided'] !== $access_token) {
+    if ($_SESSION['access_token_provided'] !== $access_token) {
       sleep(1); // Primitive pseudo brute-force protection
       unset($_SESSION['access_token_provided']);
-      exit('ERROR: Authentication failed, wrong access token supplied.
-          <br><br>Token needs to be supplied through GET parameter e.g. https://export.cloud.example.com?access_token=tokengoeshere and is set in config.php
-          <br>(This has nothing to do with your Nextcloud user credentials)');
+      exit('ERROR: Authentication failed, wrong access token supplied.<br><br>Token needs to be supplied through GET parameter e.g. https://export.cloud.example.com?access_token=tokengoeshere and is set in config.php<br>(This has nothing to do with your Nextcloud user credentials)');
     }
-
   }
 
   /**
@@ -50,18 +47,22 @@
     */
   $_SESSION['data_choices'] = isset($_GET["select"])
     ? explode(",", $_GET["select"])
-    : $data_choices;
+    : (isset($data_choices) ? $data_choices : []);
+
   // Check if export type has been set (GET parameter 'type'), else default to 'table'
-  $_SESSION['export_type'] = $_GET['type'] ?? 'table';
+  $_SESSION['export_type'] = isset($_GET['type']) ? $_GET['type'] : 'table';
+
   // Check if message mode has been set (GET parameter 'msg_mode'), else default to 'bcc'
-  $_SESSION['message_mode'] = $_GET['msg_mode'] ?? 'bcc';
+  $_SESSION['message_mode'] = isset($_GET['msg_mode']) ? $_GET['msg_mode'] : 'bcc';
+
   // Check if group has been selected for filtering
-  $_SESSION['filter_group'] = $_GET['filter_group'] ?? $filter_group;
+  $filter_group = isset($filter_group) ? $filter_group : null;
+  $_SESSION['filter_group'] = isset($_GET['filter_group']) ? $_GET['filter_group'] : $filter_group;
 
   // Populate session array 'data_options' with all data options that can be selected
   set_data_options();
 
-  if($_SERVER['REQUEST_METHOD'] == 'POST') {
+  if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Transfer $_POST values to $_SESSION variables for further use
     $_SESSION['user_name'] = $_POST['user_name'];
@@ -92,7 +93,7 @@
     * (if groupfolders app is active and at least one groupfolder exists)
     */
     $_SESSION['groupfolders_count'] =
-        $_SESSION['groupfolders_active'] == true
+        (isset($_SESSION['groupfolders_active']) && $_SESSION['groupfolders_active'] == true)
         ? count($_SESSION['raw_groupfolders_data']['ocs']['data'])
         : null;
 
@@ -108,7 +109,6 @@
 
   // Tell the browser which language is used
   echo "<html lang='{$_SESSION['language']}'>";
-
 ?>
 
   <head>

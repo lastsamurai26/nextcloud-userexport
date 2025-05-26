@@ -1519,14 +1519,15 @@ function format_size($value, $option = null) {
 }
 
 function set_security_headers() {
-
   include 'config.php';
+
+  // Prevent undefined variable warning
+  $frame_ancestors = isset($frame_ancestors) ? $frame_ancestors : "";
 
   header("X-Content-Type-Options: nosniff");
   header("Content-Security-Policy: frame-ancestors 'self' $frame_ancestors");
   header("X-Robots-Tag: none");
   header("Referrer-Policy: same-origin");
-
 }
 
 function session_secure_start() {
