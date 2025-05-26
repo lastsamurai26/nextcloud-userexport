@@ -8,6 +8,17 @@
 
   require_once 'l10n/'.$_SESSION['language'].'.php';
 
+  // --- Anpassung: $csv_headers initialisieren!
+  $csv_headers = '';
+  if (isset($_POST['csv_headers'])) {
+    $csv_headers = $_POST['csv_headers'];
+    $_SESSION['csv_headers'] = $csv_headers;
+  } elseif (isset($_SESSION['csv_headers'])) {
+    $csv_headers = $_SESSION['csv_headers'];
+  } else {
+    $csv_headers = 'true'; // Default: Header an
+  }
+
   echo "<html lang='{$_SESSION['language']}'>";
 
 ?>
@@ -42,12 +53,12 @@
       value='display'><?php echo L10N_DISPLAY ?></button>
     <br><br><br>
     <u><?php echo L10N_COLUMN_HEADERS ?></u>
-    <input type='radio' name='csv_headers' value='default'
-      <?php if ($csv_headers == 'true' || $csv_headers === null)
-        echo 'checked=\"checked\"'; ?>> <?php echo L10N_YES ?>
-    <input type='radio' name='csv_headers' value='no_headers'
+    <input type='radio' name='csv_headers' value='true'
+      <?php if ($csv_headers == 'true' || $csv_headers === '' || $csv_headers === null)
+        echo 'checked="checked"'; ?>> <?php echo L10N_YES ?>
+    <input type='radio' name='csv_headers' value='false'
       <?php if ($csv_headers == 'false')
-        echo 'checked=\"checked\"'; ?>> <?php echo L10N_NO ?>
+        echo 'checked="checked"'; ?>> <?php echo L10N_NO ?>
     <br><br>
     <button id="button-download" type='submit' name='submit'
       value='download'><?php echo L10N_DOWNLOAD_CSV ?></button>

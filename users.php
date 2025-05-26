@@ -8,7 +8,28 @@
 
   require_once 'l10n/'.$_SESSION['language'].'.php';
 
-  $export_type = $_SESSION['export_type'];
+  // Exporttyp initialisieren
+  $export_type = $_SESSION['export_type'] ?? '';
+
+  // CSV-Header-Option initialisieren
+  $csv_headers = '';
+  if (isset($_POST['csv_headers'])) {
+    $csv_headers = $_POST['csv_headers'];
+    $_SESSION['csv_headers'] = $csv_headers;
+  } elseif (isset($_SESSION['csv_headers'])) {
+    $csv_headers = $_SESSION['csv_headers'];
+  }
+
+  // Filter-Quota initialisieren
+  $filter_quota = '';
+  if (isset($_POST['filter_quota'])) {
+    $filter_quota = $_POST['filter_quota'];
+    $_SESSION['filter_quota'] = $filter_quota;
+  } elseif (isset($_SESSION['filter_quota'])) {
+    $filter_quota = $_SESSION['filter_quota'];
+  } else {
+    $filter_quota = ''; // Standardwert
+  }
 
   echo "<html lang='{$_SESSION['language']}'>";
 
@@ -97,14 +118,14 @@
               <label for='filter_lastLogin_choice'>".L10N_LAST_LOGIN_BETWEEN." </label>
               <input type=date name='filter_ll_since'";
 
-                if($_SESSION['filter_ll_since'])
+                if (!empty($_SESSION['filter_ll_since']))
                   echo " value='{$_SESSION['filter_ll_since']}'";
 
           echo ">
               ".L10N_AND."
               <input type=date name='filter_ll_before' value='";
 
-                if($_SESSION['filter_ll_before'])
+                if (!empty($_SESSION['filter_ll_before']))
                   echo $_SESSION['filter_ll_before'];
                 else
                   echo date('Y-m-d');
@@ -129,7 +150,7 @@
                   <option value='equals'>&equals;</option>
                 </select>
                 <input style='width: 6em;' type='number' min=0.5 step=0.5
-                    name='filter_quota' value=$filter_quota> GB
+                    name='filter_quota' value='".htmlspecialchars($filter_quota, ENT_QUOTES)."'> GB
             </td>
           </tr>
           </table>";
@@ -138,22 +159,18 @@
     <br><br>
     <u><?php echo L10N_FORMAT_AS ?></u>
     <input type='radio' name='export_type' value='table'
-      <?php if ($export_type == 'table' || $export_type == null)
-        echo 'checked=\"checked\"'; ?>> <?php echo L10N_TABLE ?>
+      <?php if ($export_type == 'table' || $export_type == '') echo 'checked="checked"'; ?>> <?php echo L10N_TABLE ?>
     <input type='radio' name='export_type' value='csv'
-      <?php if ($export_type == 'csv')
-        echo 'checked=\"checked\"'; ?>> CSV
+      <?php if ($export_type == 'csv') echo 'checked="checked"'; ?>> CSV
     <br><br>
     <button id='button-display' type='submit' name='submit'
       value='display'><?php echo L10N_DISPLAY ?></button>
     <br><br><br>
     <u><?php echo L10N_COLUMN_HEADERS ?></u>
-    <input type='radio' name='csv_headers' value='default'
-      <?php if ($csv_headers == 'true' || $csv_headers === null)
-        echo 'checked=\"checked\"'; ?>> <?php echo L10N_YES ?>
-    <input type='radio' name='csv_headers' value='no_headers'
-      <?php if ($csv_headers == 'false')
-        echo 'checked=\"checked\"'; ?>> <?php echo L10N_NO ?>
+    <input type='radio' name='csv_headers' value='true'
+      <?php if ($csv_headers == 'true' || $csv_headers === '') echo 'checked="checked"'; ?>> <?php echo L10N_YES ?>
+    <input type='radio' name='csv_headers' value='false'
+      <?php if ($csv_headers == 'false') echo 'checked="checked"'; ?>> <?php echo L10N_NO ?>
     <br><br>
     <button id='button-download' type='submit' name='submit'
       value='download'><?php echo L10N_DOWNLOAD_CSV ?></button>
